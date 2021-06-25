@@ -1,50 +1,53 @@
 <?php
 
-require_once "../model/appointement.php";
+require_once __DIR__."/../model/appointement.php";
 
 class Appointement
 {
     function index()
     {
-        $app=new ApointementModel;
-        $result=$app->show($reference);
+		$data = json_decode(file_get_contents("php://input"));
+        $app=new AppointementModel;
+        $result=$app->show($data->reference);
+		
     	// On envoie le code réponse 200 OK
-        http_response_code(200);
+		$num = count($result);
+        // Check if any posts
+        if ($num > 0) {
+            // Post array
+            $arr = array();
+            // $posts_arr['data'] = array();
+         
+            $num=0;
+			// print_r($result);
+            foreach ($result as $row) {
+                extract($row);
+                $item=array();
+                    $item = array(
+                        'id' => $id,
+                        'date' => $date,
+                        'Hour' => $hour,
+                        'message'=>$message
+                    );  
+                    array_push($arr, $item);
+                    $num++;
+               
+             
+            }
 
-        // On encode en json et on envoie
-        echo json_encode($result);
+            // Turn to JSON & output
+            echo json_encode(["data"=>$arr,"count"=>$num]);
     }
+	}
 
+    //add appointment
     function add()
 	{
 		
-    	$data = json_decode(file_get_contents("php://input"));
-
-    	$app=new ApointementModel();
-
-		if(!empty($data->date) && !empty($data->hour) && !empty($data->message) && !empty($data->reference))
-		{
-		
-
-			$value=$app->insert($data->date,$data->heure,$data->message,$data->reference);
-
-			if($value)
-			{
-
-            http_response_code(201);
-            echo json_encode(["message" => "L'ajout a été effectué".$value]);
-	        }else
-	        {
-
-	            http_response_code(503);
-	            echo json_encode(["message" => "L'ajout n'a pas été effectué".$value]);         
-	        }
-		}else
-		{
-			
-		    http_response_code(405);
-		    echo json_encode(["message" => "La méthode n'est pas autorisée"]);
-		}
+		$data = json_decode(file_get_contents("php://input"));
+        $ReservationModel = new AppointementModel;
+        $response =  $ReservationModel->add($data->reference,$data->date, $data->hour,$data->message);
+        echo json_encode($response);
 	}
 
     	//delete
@@ -53,7 +56,7 @@ class Appointement
 		
     	$data = json_decode(file_get_contents("php://input"));
 
-    	$app=new ApointementModel();
+    	$app=new AppointementModel();
 
 		if(!empty($data->id))
 		{
@@ -62,20 +65,24 @@ class Appointement
 
 			if($value)
 			{
-        
-            http_response_code(201);
-            echo json_encode(["message" => "suppression  a été effectué".$value]);
+				
+            echo json_encode(["message" => "suppression  a été effectué"]);
 	        }else
 	        {
 
-	            http_response_code(503);
-	            echo json_encode(["message" => "suppression n'a pas été effectué".$value]);         
+	            echo json_encode(["message" => "suppression n'a pas été effectué"]);         
 	        }
 		}else
 		{
-			// On gère l'erreur
-		    http_response_code(405);
+			
 		    echo json_encode(["message" => "La méthode n'est pas autorisée"]);
 		}
+	}
+	 function update()
+	{
+		$data = json_decode(file_get_contents("php://input"));
+        $ReservationModel = new AppointementModel;
+        $response =  $ReservationModel->update($data->id,$data->date, $data->hour, $data->message);
+        echo json_encode($response);
 	}
 }
