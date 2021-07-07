@@ -58,16 +58,20 @@ class AppointementModel extends Connection
         if(!is_array($PreRow)):
         return ["Message" => "ID reservation not valid!"];
         else:
+
+            // check if slot is reserved
+            
                 if(!$this->checkifExists($date,$hour) && !($PreRow["date"] == $date && $PreRow["hour"] == $hour) ):
                 
                 $sql = "UPDATE `appointment` SET date='$date',hour='$hour',message='$message' WHERE id=$id";
                 $query = $this->connection->query($sql);
-             
+                    
                 return ["Message" => "Reservation updated Succesfuly!"];
                 else:
-                return ["Message" => "Reservation Already Exist!"];
+                return ["Message" => "Reservation Already Exist on the same time!"];
                 endif;
         endif;
       
+        
     }
 }
